@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { jsonSchema } from "./json.validation";
-import { Difficulty } from "@prisma/client";
+// import { jsonSchema } from "./json.validation";
+// import { Prisma } from "@prisma/client";
+
+const Difficulty = {
+  EASY: "EASY",
+  MEDIUM: "MEDIUM",
+  HARD: "HARD",
+};
 
 export const testcaseSchema = z.array(
   z.object({
@@ -12,12 +18,9 @@ export const testcaseSchema = z.array(
 const createProblemSchema = z.object({
   title: z.string().nonempty({ message: "Title is required" }),
   description: z.string().nonempty({ message: "Description is required" }),
-  difficulty: z
-    .string()
-    .transform((val) => val.toUpperCase())
-    .refine((val) => Object.values(Difficulty).includes(val), {
-      message: "Difficulty must be EASY, MEDIUM, or HARD",
-    }),
+  difficulty: z.enum([Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD], {
+    errorMap: () => ({ message: "Difficulty must be EASY, MEDIUM, or HARD" }),
+  }),
   tags: z
     .array(z.string())
     .nonempty({ message: "At least one tag is required" }),
@@ -35,7 +38,7 @@ const createProblemSchema = z.object({
     message: "At least one test case is required",
   }),
   codeSnippets: z.any(),
-  referenceSolutions: jsonSchema,
+  referenceSolutions: z.any(),
 });
 
 const validateCreateProblem = (data) => {
