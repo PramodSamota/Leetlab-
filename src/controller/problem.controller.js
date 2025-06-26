@@ -45,23 +45,21 @@ const createProblem = asyncHandler(async (req, res) => {
   if (existingProblem) {
     throw new ApiError(409, "Problem already exists");
   }
-  // const referenceSolutions = req.body.referenceSolutions || {};
 
-  // 2. Safely get entries
-  // console.log("referenceSolutions...", referenceSolutions);
   const solutionEntries = Object.entries(referenceSolutions);
 
-  // console.log("solutionEntries", solutionEntries);
-
   for (const [language, solutionCode] of solutionEntries) {
+    // console.log("solutionCode::", solutionCode);
     const languageId = getJudge0LanguageById(language);
+
+    console.log("languageId", languageId);
 
     if (!languageId) {
       logger.error(`Invalid language: ${language}`);
       throw new ApiError(400, `Invalid language: ${language}`);
     }
 
-    const submissions = testcases.map((input, output) => {
+    const submissions = testcases.map(({ input, output }) => {
       return {
         source_code: solutionCode,
         language_id: languageId,
@@ -69,45 +67,45 @@ const createProblem = asyncHandler(async (req, res) => {
         expected_output: output,
       };
     });
-    console.log("submissions :", submissions);
+    // console.log("submissions :", submissions);
     const tokens = await submitBatch(submissions);
-    console.log("tokens :", tokens);
+    // console.log("tokens :", tokens);
 
     const results = await pollBatchResult(tokens);
     console.log("results :", results);
 
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
-      // console.log("result : ", result);
+
       if (result.status.id !== 3) {
         logger.error(`Submission ${i + 1} failed:${result.status.description}`);
         throw new ApiError(400, `Submission ${i + 1}`);
       }
     }
-
-    const newProblem = await db.problem.create({
-      data: {
-        title,
-        description,
-        difficulty: difficulty.toUpperCase(),
-        tags,
-        examples,
-        constraints,
-        hints,
-        testcases,
-        codeSnippets,
-        referenceSolutions,
-        userId: req.user.id,
-      },
-    });
-
-    return res
-      .status(201)
-      .json(new ApiResponse(201, newProblem, "Problem created successfully"));
   }
+
+  const newProblem = await db.problem.create({
+    data: {
+      title,
+      description,
+      difficulty: difficulty.toUpperCase(),
+      tags,
+      examples,
+      constraints,
+      hints,
+      testcases,
+      codeSnippets,
+      referenceSolutions,
+      userId: req.user.id,
+    },
+  });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, newProblem, "Problem created successfully"));
 });
 
-const getProblemById = await asyncHandler(async (req, res) => {
+const getProblemById = asyncHandler(async (req, res) => {
   const { pid } = req.params;
 
   const problem = await db.problem.findFirst({
@@ -123,7 +121,7 @@ const getProblemById = await asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, problem, "Problem feteched successfully"));
 });
 
-const getAllProblems = await asyncHandler(async (req, res) => {
+const getAllProblems = asyncHandler(async (req, res) => {
   const problems = await db.problem.findMany({
     select: {
       id: true,
@@ -132,7 +130,7 @@ const getAllProblems = await asyncHandler(async (req, res) => {
       difficulty: true,
       tags: true,
       createdAt: true,
-      updateAt: true,
+      updatedAt: true,
     },
   });
 
@@ -145,10 +143,11 @@ const getAllProblems = await asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, problems, "All problems feteched successfully"));
 });
 
-const deleteProblem = await asyncHandler(async (req, res) => {
+const deleteProblem = asyncHandler(async (req, res) => {
   const { pid } = req.params;
 
   const deletedProblem = await db.problem.deleteMany({ where: { id: pid } });
+
   if (deletedProblem.count === 0) {
     throw new ApiError(404, "Problem not found");
   }

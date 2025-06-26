@@ -6,7 +6,6 @@ export const getJudge0LanguageById = (language) => {
     PYTHON: 71,
     JAVA: 62,
     JAVASCRIPT: 63,
-    "C++ (GCC 9.2.0)": 54,
   };
 
   return languages[language.toUpperCase()];

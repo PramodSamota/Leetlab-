@@ -1,7 +1,7 @@
-import { ApiError, asyncHandler, logger } from "../utils";
+import { ApiError, asyncHandler, logger } from "../utils/index.js";
 
 const checkPermission = (role) => {
-  asyncHandler(async (req, res, next) => {
+  return asyncHandler(async (req, res, next) => {
     const userRole = req.user.role;
 
     if (userRole !== role) {
