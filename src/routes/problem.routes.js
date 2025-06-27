@@ -3,7 +3,9 @@ import {
   createProblem,
   deleteProblem,
   getAllProblems,
+  getAllProblemsSolvedByUser,
   getProblemById,
+  isProblemSolved,
 } from "../controller/problem.controller.js";
 import { verifyUser } from "../middleware/auth.middleware.js";
 import { checkPermission } from "../middleware/permission.middleware.js";
@@ -25,4 +27,6 @@ router.delete(
   deleteProblem,
 );
 
+router.get("/getSolvedProblemByUser", verifyUser, getAllProblemsSolvedByUser);
+router.get("/:pid/isProblemSolved", verifyUser, isProblemSolved);
 export default router;
