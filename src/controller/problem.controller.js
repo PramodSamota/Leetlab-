@@ -5,7 +5,6 @@ import {
   logger,
   ApiResponse,
 } from "../utils/index.js";
-import { object } from "zod/v4";
 import { db } from "../libs/db.js";
 import { validateCreateProblem } from "../validator/problem.validate.js";
 
@@ -157,9 +156,9 @@ const deleteProblem = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Problem deleted successfully"));
 });
 
-const updateProblem = await asyncHandler(async (req, res) => {});
+const updateProblem = asyncHandler(async (req, res) => {});
 
-const getAllProblemsSolvedByUser = await asyncHandler(async (req, res) => {
+const getAllProblemsSolvedByUser = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const problems = await db.problem.findMany({
     where: {
@@ -183,6 +182,28 @@ const getAllProblemsSolvedByUser = await asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, problems, "Problem Fetched Successfully"));
 });
 
+const isProblemSolved = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { pid } = req.params;
+
+  let problemSolved = false;
+
+  const foundProblem = await db.problemSolved.findFirst({
+    where: {
+      userId: userId,
+      problemId: pid,
+    },
+  });
+
+  if (foundProblem) {
+    problemSolved = true;
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, problemSolved, "This Problem is Solved"));
+});
+
 export {
   createProblem,
   deleteProblem,
@@ -190,4 +211,5 @@ export {
   getProblemById,
   getAllProblems,
   getAllProblemsSolvedByUser,
+  isProblemSolved,
 };

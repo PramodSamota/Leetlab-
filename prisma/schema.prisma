@@ -78,7 +78,7 @@ model Submission {
   compileOutput String?
   status        String
   memory        String?
-  title         String?
+  time          String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
