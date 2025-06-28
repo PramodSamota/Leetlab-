@@ -1,4 +1,4 @@
-import { ApiError, ApiResponse, asyncHandler, logger } from "../utils/index.js";
+import { ApiResponse, asyncHandler, logger } from "../utils/index.js";
 import { db } from "../libs/db.js";
 
 const getAllSubmissions = asyncHandler(async (req, res) => {
